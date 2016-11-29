@@ -69,6 +69,19 @@ class Upload {
         $this->name = $name;
     }
 
+
+    public function Move(){
+        if(!empty($this->error)){
+            return false;
+        }
+        $filename = $this->prefix . $this->name . $this->suffix . "." .$this->ext;
+        if(move_uploaded_file($this->uploadedFile, $this->path.$filename)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     public function Render(){
         if(!empty($this->error)){
             return false;
@@ -120,7 +133,6 @@ class Upload {
         }
 
         public function Clean(){
-            imagedestroy($this->uploadedFile);
             imagedestroy($this->source);
         }
     }
