@@ -69,6 +69,14 @@ class Upload {
         $this->name = $name;
     }
 
+    public function rotateImage($degrees=90, $filename){
+        $source = imagecreatefromjpeg($filename);
+        $rotate = imagerotate($source,$degrees,0);
+        imagejpeg($rotate, $filename, 100);
+        imagedestroy($source);
+        imagedestroy($rotate);
+    }
+
 
     public function Move(){
         if(!empty($this->error)){
@@ -111,21 +119,23 @@ class Upload {
             case 'jpeg':
             case  'jpg':
                 $this->source = imagecreatefromjpeg($this->uploadedFile);
-                $exif = exif_read_data($this->uploadedFile);
-                switch ($exif['Orientation']){
-                    case 3:
-                        $this->source = imagerotate($this->source, 180, 0);
-                        break;
-                    case 6:
-                        $this->source = imagerotate($this->source, - 90, 0);
-                        break;
-                    case 8:
-                        $this->source = imagerotate($this->source, 90, 0);
-                        break;
-                }
                 imagecopyresampled($this->newImage, $this->source,0,0,0,0,$width, $height, $this->orgWidth, $this->orgHeight);
                 $filename = $this->path . $this->prefix . $this->name . $this->suffix . "." .$this->ext;
                 imagejpeg($this->newImage,$filename,100);
+
+                $exif = exif_read_data($this->uploadedFile);
+                switch ($exif['Orientation']){
+                    case 3:
+                        $this->rotateImage(180, $filename);
+                        break;
+                    case 6:
+                        $this->rotateImage(-90, $filename);
+                        break;
+                    case 8:
+                        $this->rotateImage(90, $filename);
+                        break;
+                }
+
                 break;
             }
             imagedestroy($this->newImage);
