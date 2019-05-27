@@ -7,6 +7,9 @@ class Upload {
     private $orgWidth;
     private $orgHeight;
     private $width;
+    private $height;
+    private $maxWidth = 0;
+    private $maxHeight = 0;
     private $prefix;
     private $suffix;
     private $uploadedFile;
@@ -27,8 +30,9 @@ class Upload {
         $this->orgWidth = getimagesize($this->uploadedFile)[0];
         $this->orgHeight = getimagesize($this->uploadedFile)[1];
         $this->setWidth($this->orgWidth);
+        $this->setHeight($this->orgHeight);
 
-        if(!is_uploaded_file($this->uploadedFile) OR !file_exists($this->uploadedFile) OR $this->filesize==0){
+        if(!file_exists($this->uploadedFile) OR $this->filesize==0){
             $this->error[] = _("You have to upload something!");
         }
     }
@@ -49,6 +53,14 @@ class Upload {
         }
     }
 
+    public function getImageHeight(){
+        return $this->orgHeight;
+    }
+
+    public function getImageWidth(){
+        return $this->orgWidth;
+    }
+
     public function setPrefix($prefix){
         $this->prefix = $prefix;
     }
@@ -59,6 +71,18 @@ class Upload {
 
     public function setWidth($width){
         $this->width = $width;
+    }
+
+    public function setHeight($height){
+        $this->height = $height;
+    }
+
+    public function setMaxWidth($width){
+        $this->maxWidth = $width;
+    }
+
+    public function setMaxHeight($height){
+        $this->maxHeight = $height;
     }
 
     public function setPath($path){
@@ -96,8 +120,18 @@ class Upload {
         }
 
         $width = $this->width;
-        $height = ($this->orgHeight/$this->orgWidth) * $width;
+        if($this->height == $this->orgHeight){
+            $height = ($this->orgHeight/$this->orgWidth) * $width;
+        }else{
+            $height = $this->height;
+        }
 
+        if($this->maxWidth != 0 && $width>$this->maxWidth){
+            $width = $this->maxWidth;
+        }
+        if($this->maxHeight != 0 && $height>$this->maxHeight){
+            $height = $this->maxHeight;
+        }
 
         $this->newImage = imagecreatetruecolor($width, $height);
 
@@ -137,12 +171,12 @@ class Upload {
                 }
 
                 break;
-            }
-            imagedestroy($this->newImage);
-            return $this->prefix . $this->name . $this->suffix . "." .$this->ext;
         }
-
-        public function Clean(){
-            imagedestroy($this->source);
-        }
+        imagedestroy($this->newImage);
+        return $this->prefix . $this->name . $this->suffix . "." .$this->ext;
     }
+
+    public function Clean(){
+        imagedestroy($this->source);
+    }
+}
